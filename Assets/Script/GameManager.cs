@@ -68,9 +68,7 @@ public class GameManager : Singleton<GameManager> {
             int y_coord = Int32.Parse(values[1]);
             int z_coord = Int32.Parse(values[2]);
             Vector3 pos = new Vector3(x_coord, y_coord, z_coord);
-            Debug.Log(textfile);
-            Debug.Log(vertexPrefab);
-            Debug.Log(edgePrefab);
+
             // instantiate vertices
             Vertex obj = Instantiate(vertexPrefab, pos, Quaternion.identity);
 
