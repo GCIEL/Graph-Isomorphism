@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.mathmuseum.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\student\\Desktop\\Nikunj\\GraphColoring\\MathMuseum\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "MathMuseum [Testing]"
+        }
+      }
+    }
+  ]
+}
