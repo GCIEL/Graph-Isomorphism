@@ -130,8 +130,9 @@ public class SteamVR_TrackedController : MonoBehaviour
 	// Update is called once per frame
 	protected virtual void Update()
 	{
-		var system = OpenVR.System;
-		if (system != null && system.GetControllerState(controllerIndex, ref controllerState, (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VRControllerState_t))))
+
+        var system = OpenVR.System;
+        if (system != null && system.GetControllerState(controllerIndex, ref controllerState, (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VRControllerState_t))))
 		{
 			ulong trigger = controllerState.ulButtonPressed & (1UL << ((int)EVRButtonId.k_EButton_SteamVR_Trigger));
 			if (trigger > 0L && !triggerPressed)
@@ -143,8 +144,7 @@ public class SteamVR_TrackedController : MonoBehaviour
 				e.padX = controllerState.rAxis0.x;
 				e.padY = controllerState.rAxis0.y;
 				OnTriggerClicked(e);
-
-			}
+            }
 			else if (trigger == 0L && triggerPressed)
 			{
 				triggerPressed = false;
