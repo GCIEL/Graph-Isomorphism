@@ -27,8 +27,8 @@ public class GameManager : Singleton<GameManager> {
     public Text monitor;
     private bool if_clicked;
 
-    string fs;
-    string[] fLines;
+    string[] adjMatrixLines;
+    string[] posLines;
 
     // Use this for initialization (NOT CALLED TAKE CAREEE)
     void Start() {
@@ -43,34 +43,38 @@ public class GameManager : Singleton<GameManager> {
     }
 
     // Build graph from given textfile, vertex/edge Prefabs
-    public void buildGraph(TextAsset textfile, Vertex vertexPrefab, Edge edgePrefab)
+    public void buildGraph(TextAsset adjMatrix, TextAsset pos, Vertex vertexPrefab, Edge edgePrefab)
     {
         // Initialize the vertex_list for new graph
         vertex_list = new List<Vertex>();
         this.vertexPrefab = vertexPrefab;
         this.edgePrefab = edgePrefab;
 
-        // Parse the textfile
-        fs = textfile.text;
-        fLines = Regex.Split(fs, "\n");
+        // Parse the textfiles
+        adjMatrixLines = Regex.Split(adjMatrix.text, "\n");
+        posLines = Regex.Split(pos.text, "\n");
 
         // Initialize e
-        edges_list = new Edge[fLines.Length - 1, fLines.Length - 1];
+        edges_list = new Edge[adjMatrixLines.Length - 1, adjMatrixLines.Length - 1];
 
         // instantiate vertices and edges based on csv file.
-        for (int i = 0; i < fLines.Length - 1; i++)
+        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
         {
-            string valueLine = fLines[i];
-            string[] values = Regex.Split(valueLine, ",");
+            string valueLineAdj = adjMatrixLines[i];
+            string valueLinePos = posLines[i];
+
+            string[] valuesAdj = Regex.Split(valueLineAdj, ",");
+            string[] valuesPos = Regex.Split(valueLinePos, ",");
+            
 
             // Get the x-y-z coordinate of each vertex
-            int x_coord = Int32.Parse(values[0]);
-            int y_coord = Int32.Parse(values[1]);
-            int z_coord = Int32.Parse(values[2]);
-            Vector3 pos = new Vector3(x_coord, y_coord, z_coord);
+            int x_coord = Int32.Parse(valuesPos[0]);
+            int y_coord = Int32.Parse(valuesPos[1]);
+            int z_coord = Int32.Parse(valuesPos[2]);
+            Vector3 position = new Vector3(x_coord, y_coord, z_coord);
 
             // instantiate vertices
-            Vertex obj = Instantiate(vertexPrefab, pos, Quaternion.identity);
+            Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
 
             vertex_list.Add(obj);
             if (i != 0)
@@ -79,15 +83,15 @@ public class GameManager : Singleton<GameManager> {
                 for (int j = 0; j < i; j++)
                 {
                     //Debug.Log("bro");
-                    int test = Int32.Parse(values[3 + j]);
+                    int test = Int32.Parse(valuesAdj[j]);
                     //Debug.Log(test);
                     if (test == 1)
                     {
                         //Debug.Log("cat");
                         Vector3 other_pos = vertex_list[j].transform.position;
-                        Vector3 edge_pos = Vector3.Lerp(pos, other_pos, 0.5f);
+                        Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
                         Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
-                        var offset = other_pos - pos;
+                        var offset = other_pos - position;
                         var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
                         e.transform.up = offset;
                         e.transform.localScale = scale;
@@ -96,7 +100,7 @@ public class GameManager : Singleton<GameManager> {
                 }
             }
         }
-        Answer = Int32.Parse(fLines[fLines.Length - 1]);
+        Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
     }
 
     public void CheckAll()
@@ -107,9 +111,9 @@ public class GameManager : Singleton<GameManager> {
         int color_used = 0;
         List<Color> color_list = new List<Color>();
 
-        for (int i = 0; i < fLines.Length - 1; i++)
+        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
         {
-            string valueLine = fLines[i];
+            string valueLine = adjMatrixLines[i];
             string[] values = Regex.Split(valueLine, ",");
             Color this_color = vertex_list[i].rend.material.color;
             if (this_color == Color.white)
