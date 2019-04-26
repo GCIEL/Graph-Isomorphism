@@ -32,7 +32,6 @@ public class GameManager : Singleton<GameManager> {
 
     // Use this for initialization (NOT CALLED TAKE CAREEE)
     void Start() {
-        
         vertex_list = new List<Vertex>();
         if_clicked = false;
     }
