@@ -5,8 +5,10 @@ using UnityEngine;
 public class LaserPointerHandler : MonoBehaviour
 {
     public SteamVR_LaserPointer laserPointer;
+    private SteamVR_TrackedController trackedController;
 
-    public bool selected;
+    private bool selected;
+    private Renderer rend;
 
     // Start is called before the first frame update
     void Start()
@@ -15,7 +17,15 @@ public class LaserPointerHandler : MonoBehaviour
         laserPointer.PointerIn += PointerInside;
         laserPointer.PointerOut += PointerOutside;
         selected = false;
+
+        trackedController = GetComponent<SteamVR_TrackedController>();
+        if (trackedController == null)
+        {
+            trackedController = GetComponentInParent<SteamVR_TrackedController>();
+        }
+        trackedController.TriggerClicked += TriggerClicked;
     }
+
     // Update is called once per frame
     void Update()
     {
@@ -28,32 +38,14 @@ public class LaserPointerHandler : MonoBehaviour
         if (e.target.name == "Sphere(Clone)" && selected == false)
         {
             selected = true;
-            Renderer rend = e.target.gameObject.GetComponent<Renderer>();
-            if (rend != null) {
-                if (rend.material.color == Color.yellow)
-                {
-                    rend.material.color = Color.red;
-                }
-                else if (rend.material.color == Color.red)
-                {
-                    rend.material.color = Color.green;
-                }
-                else if (rend.material.color == Color.green)
-                {
-                    rend.material.color = Color.blue;
-                }
-                else
-                {
-                    rend.material.color = Color.yellow;
-                }
-            }
+            rend = e.target.gameObject.GetComponent<Renderer>();
+            
         }
     }
 
     public void PointerOutside(object sender, PointerEventArgs e)
     {
         //Debug.Log("pointer is outside this object" + e.target.name);
-
         if (e.target.name == "Sphere(Clone)" && selected == true)
         {
             selected = false;
@@ -64,4 +56,30 @@ public class LaserPointerHandler : MonoBehaviour
     {
         return selected;
     }
+
+    private void TriggerClicked(object sender, ClickedEventArgs e)
+    {
+        //Debug.Log("Trigger clicked");
+
+        if (selected == true && rend != null)
+        {
+            if (rend.material.color == Color.yellow)
+            {
+                rend.material.color = Color.red;
+            }
+            else if (rend.material.color == Color.red)
+            {
+                rend.material.color = Color.green;
+            }
+            else if (rend.material.color == Color.green)
+            {
+                rend.material.color = Color.blue;
+            }
+            else
+            {
+                rend.material.color = Color.yellow;
+            }
+        }
+    }
+
 }
