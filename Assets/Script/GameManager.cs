@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager> {
 
+    bool isCube;
     // Fields for GameManager class
 
     // Prefabs for the edges and vertices
@@ -17,7 +18,7 @@ public class GameManager : Singleton<GameManager> {
     public Edge edgePrefab;
     
     // List of edges and vertices
-    public List<Vertex> vertex_list;
+    public List<Vertex> vertex_list = new List<Vertex>();
     public Edge[,] edges_list;
 
     // Chromatic number for this grapsh
@@ -25,15 +26,15 @@ public class GameManager : Singleton<GameManager> {
 
     // Text monitor on the screen. 
     public Text monitor;
-    private bool if_clicked;
 
     string[] adjMatrixLines;
     string[] posLines;
 
-    // Use this for initialization (NOT CALLED TAKE CAREEE)
+    
+
+    // Use this for initialization 
     void Start() {
-        vertex_list = new List<Vertex>();
-        if_clicked = false;
+        isCube = false;
     }
 
     // Update is called once per frame
@@ -41,11 +42,37 @@ public class GameManager : Singleton<GameManager> {
 
     }
 
+    // changes the graph
+    public void changeGraph()
+    {   
+        // graphComponenets stores all gameobjects rendered until now
+        GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();
+
+        // we find the gameobjects that are either vertices or edges, and destroy them
+        for (int i = 0; i < graphComponents.Length; i++)
+        {
+            if (graphComponents[i].name == "Sphere(Clone)" || graphComponents[i].name == "Cylinder(Clone)") Destroy(graphComponents[i]);
+        }
+
+        // according to the current graph, we instantiate a new graph
+        if (isCube)
+        {
+            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge);
+            isCube = false;
+        }
+        else
+        {
+            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge);
+            isCube = true;
+        }
+    }
+
     // Build graph from given textfile, vertex/edge Prefabs
     public void buildGraph(TextAsset adjMatrix, TextAsset pos, Vertex vertexPrefab, Edge edgePrefab)
     {
-        // Initialize the vertex_list for new graph
         vertex_list = new List<Vertex>();
+        // Initialize the vertex_list for new graph
+
         this.vertexPrefab = vertexPrefab;
         this.edgePrefab = edgePrefab;
 
@@ -74,21 +101,20 @@ public class GameManager : Singleton<GameManager> {
 
             // instantiate vertices
             Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
-
+            //Destroy(obj);
             vertex_list.Add(obj);
+
             if (i != 0)
             {
-                //Debug.Log("ah");
                 for (int j = 0; j < i; j++)
                 {
-                    //Debug.Log("bro");
                     int test = Int32.Parse(valuesAdj[j]);
-                    //Debug.Log(test);
                     if (test == 1)
                     {
-                        //Debug.Log("cat");
                         Vector3 other_pos = vertex_list[j].transform.position;
                         Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
+
+                        // Instantiate edge
                         Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
                         var offset = other_pos - position;
                         var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
@@ -104,7 +130,6 @@ public class GameManager : Singleton<GameManager> {
 
     public void CheckAll()
     {
-        //if (Input.GetKeyDown("space")) {
         Boolean valid_coloring = true;
         Boolean is_finished = true;
         int color_used = 0;

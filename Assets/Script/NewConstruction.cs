@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class NewConstruction : MonoBehaviour {
 
+    private SteamVR_TrackedController trackedController;
+
     // Use this for initialization
     void Start () {
         //GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset,Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge);
@@ -14,5 +16,7 @@ public class NewConstruction : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-     }
+    }
+
+  
 }
