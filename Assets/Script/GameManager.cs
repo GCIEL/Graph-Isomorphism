@@ -11,7 +11,6 @@ using UnityEngine.UI;
 public class GameManager : Singleton<GameManager> {
 
     bool isCube;
-    // Fields for GameManager class
 
     // Prefabs for the edges and vertices
     public Vertex vertexPrefab;
@@ -24,13 +23,8 @@ public class GameManager : Singleton<GameManager> {
     // Chromatic number for this grapsh
     public int Answer { get; set; }
 
-    // Text monitor on the screen. 
-    public Text monitor;
-
     string[] adjMatrixLines;
     string[] posLines;
-
-    
 
     // Use this for initialization 
     void Start() {
@@ -39,7 +33,7 @@ public class GameManager : Singleton<GameManager> {
 
     // Update is called once per frame
     void Update() {
-
+        CheckAll();
     }
 
     // changes the graph
@@ -101,7 +95,6 @@ public class GameManager : Singleton<GameManager> {
 
             // instantiate vertices
             Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
-            //Destroy(obj);
             vertex_list.Add(obj);
 
             if (i != 0)
@@ -157,14 +150,13 @@ public class GameManager : Singleton<GameManager> {
             {
                 for (int j = 0; j < i; j++)
                 {
-                    int test = Int32.Parse(values[3 + j]);
+                    int test = Int32.Parse(values[j]);
                     if (test == 1)
                     {
                         Color other_color = vertex_list[j].rend.material.color;
                         if (this_color != Color.white && this_color != Color.white && this_color == other_color)
                         {
                             valid_coloring = false;
-                            //I wish to highlight this edge
                             edges_list[i, j].rend.material.color = Color.black;
                         }
                         else
@@ -175,33 +167,6 @@ public class GameManager : Singleton<GameManager> {
                 }
             }
         }
-        if (!valid_coloring)
-        {
-            Debug.Log("Stupid!");
-            monitor.text = "Wrong Coloring!";
-        }
-        else
-        {
-            if (is_finished)
-            {
-                if (color_used > Answer)
-                {
-                    Debug.Log("Nice! But could you do it with fewer colors?");
-                    monitor.text = "Nice! But could you do it with fewer colors?";
-                }
-                else
-                {
-                    Debug.Log("Smart!");
-                    monitor.text = "Smart!";
-                }
-            }
-            else
-            {
-                Debug.Log("Good job so far, finish it!");
-                monitor.text = "Good job so far, finish it!";
-            }
-        }
-        // }
     }
 
 }
