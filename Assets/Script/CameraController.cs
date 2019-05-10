@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿
+using UnityEngine;
 using System.Collections;
 using System;
 
@@ -12,27 +13,10 @@ public class CameraController : MonoBehaviour
     {
         double x = 0f;
         double z = 0f;
-        if (rotation < (Math.PI / 2))
-        {
-            x = 0.01 / Math.Cos(rotation);
-            z = 0.01 / Math.Sin(rotation);
-        }
-        else if (rotation > (Math.PI / 2) && rotation < Math.PI)
-        {
-            x = 0.01 / Math.Sin(rotation - (Math.PI / 2));
-            z = 0.01 / -Math.Cos(rotation - (Math.PI / 2));
 
-        }
-        else if (rotation > Math.PI && rotation < 3 * (Math.PI / 2))
-        {
-            x = 0.01 / -Math.Sin(3 * (Math.PI / 2) - rotation);
-            z = 0.01 / -Math.Cos(3 * (Math.PI / 2) - rotation);
-        }
-        else if (rotation > 3 * (Math.PI / 2))
-        {
-            x = 0.01 / -Math.Cos(2 * Math.PI - rotation);
-            z = 0.01 / Math.Sin(2 * Math.PI - rotation);
-        }
+        z = Math.Cos(rotation) * 0.2;
+        x = Math.Sin(rotation) * 0.2;
+        
         return (x, z);
     }
 
