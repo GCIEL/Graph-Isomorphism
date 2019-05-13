@@ -15,4 +15,4 @@ An alpha-level prototype VR game to teach graph coloring techniques and help stu
 ## Acknowledgments
 
 * This project was funded by the 2017-18 [Grinnell College Innovation Fund](https://www.grinnell.edu/about/offices-services/president/innovationfund).
-* The project was also supervised by **David Neville** and **Christopher French**
+* The project was also supervised by **David Neville** and **Christopher French**.
