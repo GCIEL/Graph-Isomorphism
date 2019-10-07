@@ -162,7 +162,7 @@ PlayerSettings:
   AndroidBundleVersionCode: 1
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
-  AndroidPreferredInstallLocation: 1
+  AndroidPreferredInstallLocation: 0
   aotOptions: 
   stripEngineCode: 1
   iPhoneStrippingLevel: 0
@@ -240,6 +240,7 @@ PlayerSettings:
   tvOSManualSigningProvisioningProfileType: 0
   appleEnableAutomaticSigning: 0
   iOSRequireARKit: 0
+  iOSAutomaticallyDetectAndAddCapabilities: 1
   appleEnableProMotion: 0
   clonedFromGUID: 3355557de5a687e44a6eface0a816616
   templatePackageId: 
@@ -669,7 +670,7 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   cloudProjectId: 981e9d73-3df1-4f33-85c4-8c813183ba2b
   framebufferDepthMemorylessMode: 0
-  projectName: 
+  projectName: MathMuseum
   organizationId: cpfrench
   cloudEnabled: 0
   enableNativePlatformBackendsForNewInputSystem: 0

@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager> {
 
+    public GameObject selectedVertex;
+
     // Boolean to see if current graph is a cube
     bool isCube;
 

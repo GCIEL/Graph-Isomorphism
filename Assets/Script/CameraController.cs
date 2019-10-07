@@ -23,10 +23,10 @@ public class CameraController : MonoBehaviour
     void LateUpdate()
     {
 		// posV finds if user inputs forward or backward
-        float posV = Input.GetAxis("Vertical");
+        float posV = Input.GetAxis("VerticalL");
 		
 		// posH finds if user inputs left and right
-        float posH = Input.GetAxis("Horizontal");
+        float posH = Input.GetAxis("HorizontalL");
 		
 		// angle to calculate positions forward and backward
         double angle_vertical = cameraEye.transform.localEulerAngles.y * Math.PI / 180;
