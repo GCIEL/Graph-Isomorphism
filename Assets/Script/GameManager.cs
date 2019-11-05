@@ -162,25 +162,17 @@ public class GameManager : Singleton<GameManager> {
 
         for (int i = 0; i < adjMatrixLines.Length - 1; i++)
         {
-            string valueLineAdj = adjMatrixLines[i];
-            string[] valuesAdj = Regex.Split(valueLineAdj, ",");
-            Vertex v = vertex_list[i];
-            for (int j = 0; j < adjMatrixLines.Length - 1; j++)
-            {
-                if (valuesAdj[j] == "1")
-                {
-                    if (j < i) {
-                        v.adjacentEdges.Add(edges_list[i, j]);
-                        edges_list[i, j].adjacentVertices.Add(v);
-                    } else {
-                        v.adjacentEdges.Add(edges_list[j, i]);
-                        edges_list[j, i].adjacentVertices.Add(v);
-                    }
+            for (int j = 0; j < i; j++) {
+                if (edges_list[i, j] != null) {
+                    vertex_list[i].adjacentEdges.Add(edges_list[i, j]);
+                    vertex_list[j].adjacentEdges.Add(edges_list[i, j]);
+                    edges_list[i, j].adjacentVertices.Add(vertex_list[i]);
+                    edges_list[i, j].adjacentVertices.Add(vertex_list[j]);
                 }
             }
         }
 
-            Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
+        Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices
         GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();

@@ -1,13 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
+using System.Linq;
 
 public class VertexController : MonoBehaviour
 {
     public GameObject cameraEye;
     public GameObject vertex;
 
-  
+    public Edge edgePrefab;
+
+
     // calculates the relative x and z values from the current camera angle 
     (double, double) calculateNewPosition(double rotation)
     {
@@ -53,9 +57,28 @@ public class VertexController : MonoBehaviour
         if (posH < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
 
         Vertex v = vertex.GetComponent<Vertex>();
-        foreach (Edge e in v.adjacentEdges)
+        HashSet<Edge> adjEdges = v.adjacentEdges;
+        foreach (Edge edge in adjEdges)
         {
-            e.rend.material.color = Color.green;
+            Vertex other = null;
+            foreach (Vertex o in edge.adjacentVertices)
+            {
+                if (o != v) other = o;
+            }
+            edge.adjacentVertices.ToList<Vertex>();
+
+            Vector3 curr_pos = vertex.transform.position;
+            Vector3 other_pos = other.gameObject.transform.position;
+
+            Debug.Log(curr_pos);
+            Debug.Log(other_pos);
+            Vector3 edge_pos = Vector3.Lerp(curr_pos, other_pos, 0.5f);
+            edge.transform.position = edge_pos;
+            
+            var offset = other_pos - curr_pos;
+            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
+            edge.transform.up = offset;
+            edge.transform.localScale = scale;
         }
         Debug.Log(v.adjacentEdges.Count);
         //ArrayList Edges = vertex.adjacentEdges;
