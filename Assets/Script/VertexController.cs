@@ -4,10 +4,10 @@ using System;
 
 public class VertexController : MonoBehaviour
 {
-    public GameObject camera;
     public GameObject cameraEye;
     public GameObject vertex;
 
+  
     // calculates the relative x and z values from the current camera angle 
     (double, double) calculateNewPosition(double rotation)
     {
@@ -23,6 +23,7 @@ public class VertexController : MonoBehaviour
     void LateUpdate()
     {
         vertex = GameManager.Instance.selectedVertex;
+        
         if (Input.GetAxis("SelectVertex") <= 0 || vertex == null)
         {
             GameManager.Instance.selectedVertex = null;
@@ -45,10 +46,18 @@ public class VertexController : MonoBehaviour
         double x_horizontal = calculateNewPosition(angle_horizontal).Item1;
         double z_horizontal = calculateNewPosition(angle_horizontal).Item2;
 
-        // calculate new camera positions according to input
+        // calculate new vertex positions according to input
         if (posV > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_vertical, 0f, (float)z_vertical);
         if (posV < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_vertical, 0f, (float)z_vertical);
         if (posH > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
         if (posH < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
+
+        Vertex v = vertex.GetComponent<Vertex>();
+        foreach (Edge e in v.adjacentEdges)
+        {
+            e.rend.material.color = Color.green;
+        }
+        Debug.Log(v.adjacentEdges.Count);
+        //ArrayList Edges = vertex.adjacentEdges;
     }
 }

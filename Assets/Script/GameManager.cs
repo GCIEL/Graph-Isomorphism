@@ -127,12 +127,14 @@ public class GameManager : Singleton<GameManager> {
             int z_coord = Int32.Parse(valuesPos[2]);
             Vector3 position = new Vector3(x_coord, y_coord, z_coord);
 
-            // Update the smallest y-value
+            // Update the smallest and largest y-values
             if (y_coord < minYValue) minYValue = y_coord;
             if (y_coord > maxYValue) maxYValue = y_coord;
 
             // instantiate vertices
             Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
+            obj.adjacentEdges = new HashSet<Edge>();
+            
             vertex_list.Add(obj);
 
             if (i != 0)
@@ -151,12 +153,34 @@ public class GameManager : Singleton<GameManager> {
                         var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
                         e.transform.up = offset;
                         e.transform.localScale = scale;
+                        e.adjacentVertices = new HashSet<Vertex>();
                         edges_list[i, j] = e;
                     }
                 }
             }
         }
-        Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
+
+        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+        {
+            string valueLineAdj = adjMatrixLines[i];
+            string[] valuesAdj = Regex.Split(valueLineAdj, ",");
+            Vertex v = vertex_list[i];
+            for (int j = 0; j < adjMatrixLines.Length - 1; j++)
+            {
+                if (valuesAdj[j] == "1")
+                {
+                    if (j < i) {
+                        v.adjacentEdges.Add(edges_list[i, j]);
+                        edges_list[i, j].adjacentVertices.Add(v);
+                    } else {
+                        v.adjacentEdges.Add(edges_list[j, i]);
+                        edges_list[j, i].adjacentVertices.Add(v);
+                    }
+                }
+            }
+        }
+
+            Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices
         GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();
