@@ -5,6 +5,7 @@ using UnityEngine;
 public class Edge : MonoBehaviour {
 
     public Renderer rend;
+    public HashSet<Vertex> adjacentVertices;
 
 	// Use this for initialization
 	void Start () {
