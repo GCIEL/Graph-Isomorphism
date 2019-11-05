@@ -127,12 +127,14 @@ public class GameManager : Singleton<GameManager> {
             int z_coord = Int32.Parse(valuesPos[2]);
             Vector3 position = new Vector3(x_coord, y_coord, z_coord);
 
-            // Update the smallest y-value
+            // Update the smallest and largest y-values
             if (y_coord < minYValue) minYValue = y_coord;
             if (y_coord > maxYValue) maxYValue = y_coord;
 
             // instantiate vertices
             Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
+            obj.adjacentEdges = new HashSet<Edge>();
+            
             vertex_list.Add(obj);
 
             if (i != 0)
@@ -151,11 +153,25 @@ public class GameManager : Singleton<GameManager> {
                         var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
                         e.transform.up = offset;
                         e.transform.localScale = scale;
+                        e.adjacentVertices = new HashSet<Vertex>();
                         edges_list[i, j] = e;
                     }
                 }
             }
         }
+
+        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+        {
+            for (int j = 0; j < i; j++) {
+                if (edges_list[i, j] != null) {
+                    vertex_list[i].adjacentEdges.Add(edges_list[i, j]);
+                    vertex_list[j].adjacentEdges.Add(edges_list[i, j]);
+                    edges_list[i, j].adjacentVertices.Add(vertex_list[i]);
+                    edges_list[i, j].adjacentVertices.Add(vertex_list[j]);
+                }
+            }
+        }
+
         Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices

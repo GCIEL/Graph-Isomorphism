@@ -1,12 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
+using System.Linq;
 
 public class VertexController : MonoBehaviour
 {
-    public GameObject camera;
     public GameObject cameraEye;
     public GameObject vertex;
+
+    public Edge edgePrefab;
+
 
     // calculates the relative x and z values from the current camera angle 
     (double, double) calculateNewPosition(double rotation)
@@ -23,6 +27,7 @@ public class VertexController : MonoBehaviour
     void LateUpdate()
     {
         vertex = GameManager.Instance.selectedVertex;
+        
         if (Input.GetAxis("SelectVertex") <= 0 || vertex == null)
         {
             GameManager.Instance.selectedVertex = null;
@@ -45,10 +50,37 @@ public class VertexController : MonoBehaviour
         double x_horizontal = calculateNewPosition(angle_horizontal).Item1;
         double z_horizontal = calculateNewPosition(angle_horizontal).Item2;
 
-        // calculate new camera positions according to input
+        // calculate new vertex positions according to input
         if (posV > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_vertical, 0f, (float)z_vertical);
         if (posV < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_vertical, 0f, (float)z_vertical);
         if (posH > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
         if (posH < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
+
+        Vertex v = vertex.GetComponent<Vertex>();
+        HashSet<Edge> adjEdges = v.adjacentEdges;
+        foreach (Edge edge in adjEdges)
+        {
+            Vertex other = null;
+            foreach (Vertex o in edge.adjacentVertices)
+            {
+                if (o != v) other = o;
+            }
+            edge.adjacentVertices.ToList<Vertex>();
+
+            Vector3 curr_pos = vertex.transform.position;
+            Vector3 other_pos = other.gameObject.transform.position;
+
+            Debug.Log(curr_pos);
+            Debug.Log(other_pos);
+            Vector3 edge_pos = Vector3.Lerp(curr_pos, other_pos, 0.5f);
+            edge.transform.position = edge_pos;
+            
+            var offset = other_pos - curr_pos;
+            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
+            edge.transform.up = offset;
+            edge.transform.localScale = scale;
+        }
+        Debug.Log(v.adjacentEdges.Count);
+        //ArrayList Edges = vertex.adjacentEdges;
     }
 }
