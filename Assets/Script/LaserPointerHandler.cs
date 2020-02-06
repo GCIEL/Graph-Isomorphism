@@ -23,7 +23,6 @@ public class LaserPointerHandler : MonoBehaviour
         {
             trackedController = GetComponentInParent<SteamVR_TrackedController>();
         }
-        trackedController.TriggerClicked += TriggerClicked;
     }
 
     // Update is called once per frame
@@ -57,30 +56,4 @@ public class LaserPointerHandler : MonoBehaviour
     {
         return selected;
     }
-
-    private void TriggerClicked(object sender, ClickedEventArgs e)
-    {
-        //Debug.Log("Trigger clicked");
-
-        if (selected == true && rend != null)
-        {
-            if (rend.material.color == Color.yellow)
-            {
-                rend.material.color = Color.red;
-            }
-            else if (rend.material.color == Color.red)
-            {
-                rend.material.color = Color.green;
-            }
-            else if (rend.material.color == Color.green)
-            {
-                rend.material.color = Color.blue;
-            }
-            else
-            {
-                rend.material.color = Color.yellow;
-            }
-        }
-    }
-
 }

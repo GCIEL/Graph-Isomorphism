@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NewConstruction : MonoBehaviour {
+public class Construction : MonoBehaviour {
 
     private SteamVR_TrackedController trackedController;
 
