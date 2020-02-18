@@ -1,5 +1,5 @@
 # Graph Isomorphism
-An alpha-level prototype VR game to teach graph isomorphism and help students visualize complex graphs.
+An alpha-level prototype VR game to teach graph isomorphisms and help students visualize complex graphs.
 
 ## Built With
 
