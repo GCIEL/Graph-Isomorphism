@@ -1,4 +1,4 @@
-# Graph Coloring
+# Graph Isomorphism
 An alpha-level prototype VR game to teach graph coloring techniques and help students visualize complex graphs.
 
 ## Built With
@@ -8,9 +8,8 @@ An alpha-level prototype VR game to teach graph coloring techniques and help stu
 
 ## Authors and Contributors
 
-* **Nikunj Agrawa** - [Website](https://nikunj-agrawal.com/) and [GitHub](https://github.com/nikagarwal98)
+* **Nikunj Agrawal** - [Website](https://nikunj-agrawal.com/) and [GitHub](https://github.com/nikagarwal98)
 * **Yuya Kawakami** - [GitHub](https://github.com/yuya737)
-* **Ziwen Chen** - [GitHub](https://github.com/arthurhero)
 
 ## Acknowledgments
 
