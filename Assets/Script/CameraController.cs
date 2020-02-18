@@ -29,7 +29,7 @@ public class CameraController : MonoBehaviour
 		// posH finds if user inputs left and right
         float posH = Input.GetAxis("HorizontalL");
 
-        Debug.Log(angle_vertical);
+        //Debug.Log(angle_vertical);
 
         if ((posV == 0 && posH == 0) || angle_vertical == 0.0) angle_vertical = cameraEye.transform.localEulerAngles.y * Math.PI / 180;
         double x_vertical = calculateNewPosition(angle_vertical).Item1;
@@ -41,11 +41,35 @@ public class CameraController : MonoBehaviour
         double angle_horizontal = (angle_vertical + (Math.PI / 2)) % (2 * Math.PI);
 		double x_horizontal = calculateNewPosition(angle_horizontal).Item1;
         double z_horizontal = calculateNewPosition(angle_horizontal).Item2;
-		
-		// calculate new camera positions according to input
-        if (posV > 0f) camera.transform.position = camera.transform.position + new Vector3((float) x_vertical * 0.3f , 0f, (float) z_vertical * 0.3f);
-        if (posV < 0f) camera.transform.position = camera.transform.position - new Vector3((float) x_vertical * 0.3f, 0f, (float) z_vertical * 0.3f);
-        if (posH > 0f) camera.transform.position = camera.transform.position + new Vector3((float) x_horizontal * 0.3f, 0f, (float) z_horizontal * 0.3f);
-        if (posH < 0f) camera.transform.position = camera.transform.position - new Vector3((float) x_horizontal * 0.3f, 0f, (float) z_horizontal * 0.3f);
+
+        // calculate new camera positions according to input
+        if (posV > 0f)
+        {
+            camera.transform.position = camera.transform.position + new Vector3((float)x_vertical * 0.3f, 0f, (float)z_vertical * 0.3f);
+            GameObject rightController = GameObject.Find("Controller (right)");
+            VertexController controller = rightController.GetComponent<VertexController>();
+            controller.initControllerPos = controller.initControllerPos + new Vector3((float)x_vertical * 0.3f, 0f, (float)z_vertical * 0.3f);
+        }
+        if (posV < 0f)
+        {
+            camera.transform.position = camera.transform.position - new Vector3((float)x_vertical * 0.3f, 0f, (float)z_vertical * 0.3f);
+            GameObject rightController = GameObject.Find("Controller (right)");
+            VertexController controller = rightController.GetComponent<VertexController>();
+            controller.initControllerPos = controller.initControllerPos - new Vector3((float)x_vertical * 0.3f, 0f, (float)z_vertical * 0.3f);
+        }
+        if (posH > 0f)
+        {
+            camera.transform.position = camera.transform.position + new Vector3((float)x_horizontal * 0.3f, 0f, (float)z_horizontal * 0.3f);
+            GameObject rightController = GameObject.Find("Controller (right)");
+            VertexController controller = rightController.GetComponent<VertexController>();
+            controller.initControllerPos = controller.initControllerPos + new Vector3((float)x_horizontal * 0.3f, 0f, (float)z_horizontal * 0.3f);
+        }
+        if (posH < 0f)
+        {
+            camera.transform.position = camera.transform.position - new Vector3((float)x_horizontal * 0.3f, 0f, (float)z_horizontal * 0.3f);
+            GameObject rightController = GameObject.Find("Controller (right)");
+            VertexController controller = rightController.GetComponent<VertexController>();
+            controller.initControllerPos = controller.initControllerPos - new Vector3((float)x_horizontal * 0.3f, 0f, (float)z_horizontal * 0.3f);
+        }
     }
 }

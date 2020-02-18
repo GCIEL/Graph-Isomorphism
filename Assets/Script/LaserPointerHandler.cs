@@ -37,7 +37,7 @@ public class LaserPointerHandler : MonoBehaviour
         if (e.target.name == "Sphere(Clone)" && selected == false)
         {
             selected = true;
-            GameManager.Instance.selectedVertex = e.target.gameObject;
+            if(GameManager.Instance.selectedVertex == null) GameManager.Instance.selectedVertex = e.target.gameObject;
             rend = e.target.gameObject.GetComponent<Renderer>();
             
         }
