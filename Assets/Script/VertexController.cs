@@ -13,8 +13,7 @@ public class VertexController : MonoBehaviour
 
     public Vector3 initVertexPos;
     public Vector3 initControllerPos;
-
-    public float scale = 100f;
+    public Vector3 directionToVertex;
 
     // calculates the relative x and z values from the current camera angle 
     (double, double) calculateNewPosition(double rotation)
@@ -28,8 +27,9 @@ public class VertexController : MonoBehaviour
         return (x, z);
     }
 
-    void LateUpdate()
+    void Update()
     {
+        Debug.Log(GameManager.Instance.selectedVertex);
         // Get the vertex (if selected at all) 
         vertex = GameManager.Instance.selectedVertex;
 
@@ -40,14 +40,17 @@ public class VertexController : MonoBehaviour
         // If selectVertex toggle isn't held or we have no selected vertex, return
         if (Input.GetAxis("SelectVertex") <= 0 || vertex == null)
         {
+            
             initVertexPos = Vector3.zero;
             initControllerPos = Vector3.zero;
 
-            GameManager.Instance.selectedVertex = null;
             controller.laserPointer.active = true;
             return;
         }
-        
+
+        // Disable laser pointer
+        controller.laserPointer.active = false;
+
         // Save initial vertex/controller positions
         if (initVertexPos == Vector3.zero) initVertexPos = vertex.transform.position;
         if (initControllerPos == Vector3.zero) initControllerPos = this.transform.position;
@@ -55,35 +58,24 @@ public class VertexController : MonoBehaviour
         // Save `heading` vector that stores the direction that we want to move our vertex, and scale it and move
         Vector3 heading = this.transform.position - initControllerPos;
         vertex.transform.position = initVertexPos + Vector3.Scale(heading, new Vector3(25f, 25f, 25f));
-    
-        // Disable laser pointer
-        controller.laserPointer.active = false;
 
-
-
-        /*
         // posV finds if user inputs forward or backward
         float posV = Input.GetAxis("VerticalR");
+        directionToVertex = vertex.transform.position - this.transform.position;
+        Debug.Log(posV);
+        if (posV > 0f)
+        {
+            vertex.transform.position = vertex.transform.position + Vector3.Scale(directionToVertex, new Vector3(0.01f,0.01f, 0.01f));
+            initVertexPos = initVertexPos + Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
+        } 
 
-        // posH finds if user inputs left and right
-        float posH = Input.GetAxis("HorizontalR");
+        if (posV < 0f)
+        {
+            vertex.transform.position = vertex.transform.position - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
+            initVertexPos = initVertexPos - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
+        }
 
-        // angle to calculate positions forward and backward
-        double angle_vertical = cameraEye.transform.localEulerAngles.y * Math.PI / 180;
-        double x_vertical = calculateNewPosition(angle_vertical).Item1;
-        double z_vertical = calculateNewPosition(angle_vertical).Item2;
 
-        // angle to calculate positions left and right
-        double angle_horizontal = (angle_vertical + (Math.PI / 2)) % (2 * Math.PI);
-        double x_horizontal = calculateNewPosition(angle_horizontal).Item1;
-        double z_horizontal = calculateNewPosition(angle_horizontal).Item2;
-
-        // calculate new vertex positions according to input
-        if (posV > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_vertical, 0f, (float)z_vertical);
-        if (posV < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_vertical, 0f, (float)z_vertical);
-        if (posH > 0f) vertex.transform.position = vertex.transform.position + new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
-        if (posH < 0f) vertex.transform.position = vertex.transform.position - new Vector3((float)x_horizontal, 0f, (float)z_horizontal);
-        */
         Vertex v = vertex.GetComponent<Vertex>();
         HashSet<Edge> adjEdges = v.adjacentEdges;
         foreach (Edge edge in adjEdges)

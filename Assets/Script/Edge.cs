@@ -10,7 +10,8 @@ public class Edge : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         rend = GetComponent<Renderer>();
-	}
+        rend.material.color = Color.black;
+    }
 	
 	// Update is called once per frame
 	void Update () {

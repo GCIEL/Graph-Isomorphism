@@ -12,7 +12,7 @@ public class Vertex : MonoBehaviour {
         //Fetch the Renderer from the GameObject
         rend = GetComponent<Renderer>();
         //Set the main Color of the Material to green
-        rend.material.color = Color.green;
+        rend.material.color = Color.white;
     }
 
     // Update is called once per frame

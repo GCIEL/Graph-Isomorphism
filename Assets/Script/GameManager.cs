@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager> {
 
+    // Track a vertex selected 
     public GameObject selectedVertex;
 
     // Boolean to see if current graph is a cube
@@ -35,6 +36,7 @@ public class GameManager : Singleton<GameManager> {
 
     // Use this for initialization 
     void Start() {
+        selectedVertex = null;
         isCube = false;
         completed = false;
         changedPlanecolor = false;
@@ -45,7 +47,7 @@ public class GameManager : Singleton<GameManager> {
         // If the coloring isn't completed, check if it is
         if (!completed)
         { 
-            CheckAll();
+            //CheckAll();
         }
         // If the coloring is completed and the color of plant isn't changed yet, change the color of the plane
         if (completed && !changedPlanecolor)
