@@ -34,6 +34,9 @@ public class GameManager : Singleton<GameManager> {
     string[] adjMatrixLines;
     string[] posLines;
 
+    // offset to use for static graph
+    int staticGraphOffset;
+
     // Use this for initialization 
     void Start() {
         selectedVertex = null;
@@ -83,18 +86,21 @@ public class GameManager : Singleton<GameManager> {
         // according to the current graph, we instantiate a new graph
         if (isCube)
         {
-            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge);
+            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, false);
+            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, true);
             isCube = false;
         }
         else
         {
-            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge);
+            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, false);
+            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, true);
+
             isCube = true;
         }
     }
 
-    // Build graph from given textfile, vertex/edge Prefabs
-    public void buildGraph(TextAsset adjMatrix, TextAsset pos, Vertex vertexPrefab, Edge edgePrefab)
+    // Build graph from given textfile, vertex/edge Prefabs and whether or not the graph is static
+    public void buildGraph(TextAsset adjMatrix, TextAsset pos, Vertex vertexPrefab, Edge edgePrefab, bool staticGraph)
     {
         // Initialize the vertex_list for new graph
         vertex_list = new List<Vertex>();
@@ -113,6 +119,10 @@ public class GameManager : Singleton<GameManager> {
         int minYValue = Int32.MaxValue;
         int maxYValue = Int32.MinValue;
 
+        // Store the smallest x-value for the plane
+        int minXValue = Int32.MaxValue;
+        int maxXValue = Int32.MinValue;
+
         // instantiate vertices and edges based on csv file.
         for (int i = 0; i < adjMatrixLines.Length - 1; i++)
         {
@@ -129,16 +139,36 @@ public class GameManager : Singleton<GameManager> {
             int z_coord = Int32.Parse(valuesPos[2]);
             Vector3 position = new Vector3(x_coord, y_coord, z_coord);
 
+            // Update the smallest and largest x-values
+            if (x_coord < minXValue) minXValue = x_coord;
+            if (x_coord > maxXValue) maxXValue = x_coord;
+
             // Update the smallest and largest y-values
             if (y_coord < minYValue) minYValue = y_coord;
             if (y_coord > maxYValue) maxYValue = y_coord;
 
-            // instantiate vertices
-            Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
-            obj.adjacentEdges = new HashSet<Edge>();
+            if (!staticGraph) staticGraphOffset = maxXValue - minXValue;
             
-            vertex_list.Add(obj);
 
+            // instantiate vertices
+
+            if (!staticGraph)
+            {
+                Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
+                obj.adjacentEdges = new HashSet<Edge>();
+                vertex_list.Add(obj);
+            } else
+            {
+                position = new Vector3(x_coord + staticGraphOffset + 4, y_coord, z_coord);
+                Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
+
+                obj.staticVertex = true;
+                obj.ChangeOpacity();
+                vertex_list.Add(obj);
+            }
+            
+            
+                
             if (i != 0)
             {
                 for (int j = 0; j < i; j++)
@@ -151,6 +181,15 @@ public class GameManager : Singleton<GameManager> {
 
                         // Instantiate edge
                         Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
+
+                        // Set opacity
+                        if (staticGraph)
+                        {
+                            e.staticEdge = true;
+                            e.ChangeOpacity();
+
+                        }
+
                         var offset = other_pos - position;
                         var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
                         e.transform.up = offset;
@@ -162,18 +201,23 @@ public class GameManager : Singleton<GameManager> {
             }
         }
 
-        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+        // Only populate vertexlist and edge list for dynamic graph - no need for static graphs
+        if (!staticGraph)
         {
-            for (int j = 0; j < i; j++) {
-                if (edges_list[i, j] != null) {
-                    vertex_list[i].adjacentEdges.Add(edges_list[i, j]);
-                    vertex_list[j].adjacentEdges.Add(edges_list[i, j]);
-                    edges_list[i, j].adjacentVertices.Add(vertex_list[i]);
-                    edges_list[i, j].adjacentVertices.Add(vertex_list[j]);
+            for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if (edges_list[i, j] != null)
+                    {
+                        vertex_list[i].adjacentEdges.Add(edges_list[i, j]);
+                        vertex_list[j].adjacentEdges.Add(edges_list[i, j]);
+                        edges_list[i, j].adjacentVertices.Add(vertex_list[i]);
+                        edges_list[i, j].adjacentVertices.Add(vertex_list[j]);
+                    }
                 }
             }
         }
-
         Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices
@@ -190,6 +234,7 @@ public class GameManager : Singleton<GameManager> {
             {
                 Vector3 planeCoord = graphComponents[i].transform.position;
                 planeCoord.y = (minYValue + maxYValue) / 2;
+                planeCoord.x = planeCoord.x + 2;
                 graphComponents[i].transform.position = planeCoord;
             }
         }
@@ -250,5 +295,7 @@ public class GameManager : Singleton<GameManager> {
         }
     }
 
+
+   
 }
 

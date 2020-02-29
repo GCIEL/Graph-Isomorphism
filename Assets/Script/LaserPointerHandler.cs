@@ -34,20 +34,21 @@ public class LaserPointerHandler : MonoBehaviour
 
     public void PointerInside(object sender, PointerEventArgs e)
     {
-        Debug.Log("pointer is inside" );
+        //Debug.Log("pointer is inside" );
         if (e.target.name == "Sphere(Clone)" && selected == false)
         {
+            Vertex selectedVertex = e.target.gameObject.GetComponent<Vertex>();
+            if (selectedVertex.staticVertex) return;
             selected = true;
             if(GameManager.Instance.selectedVertex == null) GameManager.Instance.selectedVertex = e.target.gameObject;
             rend = e.target.gameObject.GetComponent<Renderer>();
-            
         }
     }
     
 
     public void PointerOutside(object sender, PointerEventArgs e)
     {
-        Debug.Log("pointer is outside");
+        //Debug.Log("pointer is outside");
         if (e.target.name == "Sphere(Clone)" && selected == true)
         {
             selected = false;

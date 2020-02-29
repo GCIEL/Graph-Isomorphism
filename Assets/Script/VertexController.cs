@@ -29,7 +29,7 @@ public class VertexController : MonoBehaviour
 
     void Update()
     {
-        Debug.Log(GameManager.Instance.selectedVertex);
+        //Debug.Log(GameManager.Instance.selectedVertex);
         // Get the vertex (if selected at all) 
         vertex = GameManager.Instance.selectedVertex;
 
@@ -61,8 +61,10 @@ public class VertexController : MonoBehaviour
 
         // posV finds if user inputs forward or backward
         float posV = Input.GetAxis("VerticalR");
+        float posH = Input.GetAxis("HorizontalR");
         directionToVertex = vertex.transform.position - this.transform.position;
-        Debug.Log(posV);
+        directionToVertex = Vector3.ClampMagnitude(directionToVertex, 10f);
+
         if (posV > 0f)
         {
             vertex.transform.position = vertex.transform.position + Vector3.Scale(directionToVertex, new Vector3(0.01f,0.01f, 0.01f));
@@ -73,6 +75,24 @@ public class VertexController : MonoBehaviour
         {
             vertex.transform.position = vertex.transform.position - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
             initVertexPos = initVertexPos - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
+        }
+        if (posH > 0f)
+        {
+            Vector3 verticalVec= new Vector3(0f, 0.1f, 0f);
+            Vector3 othogonalVec = Vector3.Cross(directionToVertex, verticalVec);
+            othogonalVec = Vector3.Scale(othogonalVec, new Vector3(directionToVertex.magnitude/othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude));
+            //Debug.Log("ortho" + othogonalVec.magnitude);
+            vertex.transform.position = vertex.transform.position - Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
+            initVertexPos = initVertexPos - Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
+        }
+
+        if (posH < 0f)
+        {
+            Vector3 verticalVec = new Vector3(0f, 0.1f, 0f);
+            Vector3 othogonalVec = Vector3.Cross(directionToVertex, verticalVec);
+            othogonalVec = Vector3.Scale(othogonalVec, new Vector3(directionToVertex.magnitude / othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude));
+            vertex.transform.position = vertex.transform.position + Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
+            initVertexPos = initVertexPos + Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
         }
 
 
