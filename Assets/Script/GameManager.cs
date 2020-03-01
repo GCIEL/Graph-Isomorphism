@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 
 // GameManager class that utilizes a singleton pattern
 
@@ -23,9 +24,10 @@ public class GameManager : Singleton<GameManager> {
     // Prefabs for the edges and vertices
     public Vertex vertexPrefab;
     public Edge edgePrefab;
-    
+
     // List of edges and vertices
-    public List<Vertex> vertex_list = new List<Vertex>();
+    public List<Vertex> static_vertex_list;
+    public List<Vertex> dynamic_vertex_list;
     public Edge[,] edges_list;
 
     // Chromatic number for this grapsh
@@ -37,14 +39,24 @@ public class GameManager : Singleton<GameManager> {
     // offset to use for static graph
     int staticGraphOffset;
 
+    // Vertex mapping that the user defines
+    public Hashtable mapping;
+
+
     // Use this for initialization 
     void Start() {
         selectedVertex = null;
         isCube = false;
         completed = false;
         changedPlanecolor = false;
+        mapping = new Hashtable();
     }
 
+    private void Awake()
+    {
+        static_vertex_list = new List<Vertex>();
+        dynamic_vertex_list = new List<Vertex>();
+    }
     // Update is called once per frame
     void Update() {
         // If the coloring isn't completed, check if it is
@@ -103,7 +115,8 @@ public class GameManager : Singleton<GameManager> {
     public void buildGraph(TextAsset adjMatrix, TextAsset pos, Vertex vertexPrefab, Edge edgePrefab, bool staticGraph)
     {
         // Initialize the vertex_list for new graph
-        vertex_list = new List<Vertex>();
+        static_vertex_list = new List<Vertex>();
+        dynamic_vertex_list = new List<Vertex>();
 
         this.vertexPrefab = vertexPrefab;
         this.edgePrefab = edgePrefab;
@@ -155,18 +168,24 @@ public class GameManager : Singleton<GameManager> {
             if (!staticGraph)
             {
                 Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
-                obj.adjacentEdges = new HashSet<Edge>();
-                vertex_list.Add(obj);
+                obj.incidentEdges = new HashSet<Edge>();
+                obj.tag = "movableVertex";
+                obj.information.vertexNumber = i;
+                dynamic_vertex_list.Add(obj);
             } else
             {
                 position = new Vector3(x_coord + staticGraphOffset + 4, y_coord, z_coord);
                 Vertex obj = Instantiate(vertexPrefab, position, Quaternion.identity);
-
-                obj.staticVertex = true;
-                obj.ChangeOpacity();
-                vertex_list.Add(obj);
+                obj.incidentEdges = new HashSet<Edge>();
+                obj.tag = "nonMovableVertex";
+                obj.GetComponent<Vertex>().ChangeOpacity();
+                obj.information.staticVertex = true;
+                obj.information.vertexNumber = i;
+                obj.gameObject.layer = 2;
+                static_vertex_list.Add(obj);
             }
             
+           
             
                 
             if (i != 0)
@@ -176,33 +195,40 @@ public class GameManager : Singleton<GameManager> {
                     int test = Int32.Parse(valuesAdj[j]);
                     if (test == 1)
                     {
-                        Vector3 other_pos = vertex_list[j].transform.position;
-                        Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
-
-                        // Instantiate edge
-                        Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
-
-                        // Set opacity
                         if (staticGraph)
                         {
+                            Vector3 other_pos = static_vertex_list[j].transform.position;
+                            Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
+                            Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
                             e.staticEdge = true;
                             e.ChangeOpacity();
-
+                            e.tag = "nonMovableEdge";
+                            var offset = other_pos - position;
+                            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
+                            e.transform.up = offset;
+                            e.transform.localScale = scale;
+                            e.adjacentVertices = new HashSet<Vertex>();
+                            edges_list[i, j] = e;
+                        } else
+                        {
+                            Vector3 other_pos = dynamic_vertex_list[j].transform.position;
+                            Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
+                            Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
+                            e.tag = "movableEdge";
+                            var offset = other_pos - position;
+                            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
+                            e.transform.up = offset;
+                            e.transform.localScale = scale;
+                            e.adjacentVertices = new HashSet<Vertex>();
+                            edges_list[i, j] = e;
                         }
-
-                        var offset = other_pos - position;
-                        var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
-                        e.transform.up = offset;
-                        e.transform.localScale = scale;
-                        e.adjacentVertices = new HashSet<Vertex>();
-                        edges_list[i, j] = e;
                     }
                 }
             }
         }
 
         // Only populate vertexlist and edge list for dynamic graph - no need for static graphs
-        if (!staticGraph)
+        if (staticGraph)
         {
             for (int i = 0; i < adjMatrixLines.Length - 1; i++)
             {
@@ -210,14 +236,45 @@ public class GameManager : Singleton<GameManager> {
                 {
                     if (edges_list[i, j] != null)
                     {
-                        vertex_list[i].adjacentEdges.Add(edges_list[i, j]);
-                        vertex_list[j].adjacentEdges.Add(edges_list[i, j]);
-                        edges_list[i, j].adjacentVertices.Add(vertex_list[i]);
-                        edges_list[i, j].adjacentVertices.Add(vertex_list[j]);
+                        static_vertex_list[i].incidentEdges.Add(edges_list[i, j]);
+                        static_vertex_list[j].incidentEdges.Add(edges_list[i, j]);
+                        edges_list[i, j].adjacentVertices.Add(static_vertex_list[i]);
+                        edges_list[i, j].adjacentVertices.Add(static_vertex_list[j]);
+                    }
+                }
+            }
+        } else
+        {
+            for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if (edges_list[i, j] != null)
+                    {
+                        dynamic_vertex_list[i].incidentEdges.Add(edges_list[i, j]);
+                        dynamic_vertex_list[j].incidentEdges.Add(edges_list[i, j]);
+                        edges_list[i, j].adjacentVertices.Add(dynamic_vertex_list[i]);
+                        edges_list[i, j].adjacentVertices.Add(dynamic_vertex_list[j]);
                     }
                 }
             }
         }
+
+        Debug.Log(static_vertex_list.Count);
+        if (staticGraph)
+        {
+            foreach (Vertex vertex in static_vertex_list)
+            {
+                vertex.recordAdjacentVerices();
+            }
+        } else
+        {
+            foreach (Vertex vertex in dynamic_vertex_list)
+            {
+                vertex.recordAdjacentVerices();
+            }
+        }
+        
         Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices
@@ -252,7 +309,7 @@ public class GameManager : Singleton<GameManager> {
         {
             string valueLine = adjMatrixLines[i];
             string[] values = Regex.Split(valueLine, ",");
-            Color this_color = vertex_list[i].rend.material.color;
+            Color this_color = static_vertex_list[i].rend.material.color;
             if (this_color == Color.white)
             {
                 is_finished = false;
@@ -273,7 +330,7 @@ public class GameManager : Singleton<GameManager> {
                     int test = Int32.Parse(values[j]);
                     if (test == 1)
                     {
-                        Color other_color = vertex_list[j].rend.material.color;
+                        Color other_color = static_vertex_list[j].rend.material.color;
                         if (this_color != Color.white && this_color != Color.white && this_color == other_color)
                         {
                             valid_coloring = false;
@@ -294,8 +351,30 @@ public class GameManager : Singleton<GameManager> {
             completed = true;
         }
     }
+    public void moveEdges(Vertex v)
+    {
+        HashSet<Edge> adjEdges = v.incidentEdges;
+        foreach (Edge edge in adjEdges)
+        {
+            Vertex other = null;
+            foreach (Vertex o in edge.adjacentVertices)
+            {
+                if (o != v) other = o;
+            }
+            //edge.adjacentVertices.ToList<Vertex>();
 
+            Vector3 curr_pos = v.transform.position;
+            Vector3 other_pos = other.gameObject.transform.position;
 
-   
+            Vector3 edge_pos = Vector3.Lerp(curr_pos, other_pos, 0.5f);
+            edge.transform.position = edge_pos;
+
+            var offset = other_pos - curr_pos;
+            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
+            edge.transform.up = offset;
+            edge.transform.localScale = scale;
+        }
+    }
+
 }
 

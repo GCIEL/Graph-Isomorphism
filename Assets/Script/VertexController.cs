@@ -67,15 +67,16 @@ public class VertexController : MonoBehaviour
 
         if (posV > 0f)
         {
-            vertex.transform.position = vertex.transform.position + Vector3.Scale(directionToVertex, new Vector3(0.01f,0.01f, 0.01f));
+            vertex.transform.position = vertex.transform.position + Vector3.Scale(directionToVertex, new Vector3(0.015f,0.015f, 0.015f));
             initVertexPos = initVertexPos + Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
         } 
 
         if (posV < 0f)
         {
-            vertex.transform.position = vertex.transform.position - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
+            vertex.transform.position = vertex.transform.position - Vector3.Scale(directionToVertex, new Vector3(0.015f, 0.015f, 0.015f));
             initVertexPos = initVertexPos - Vector3.Scale(directionToVertex, new Vector3(0.01f, 0.01f, 0.01f));
         }
+        /*
         if (posH > 0f)
         {
             Vector3 verticalVec= new Vector3(0f, 0.1f, 0f);
@@ -93,32 +94,11 @@ public class VertexController : MonoBehaviour
             othogonalVec = Vector3.Scale(othogonalVec, new Vector3(directionToVertex.magnitude / othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude, directionToVertex.magnitude / othogonalVec.magnitude));
             vertex.transform.position = vertex.transform.position + Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
             initVertexPos = initVertexPos + Vector3.Scale(othogonalVec, new Vector3(0.01f, 0.01f, 0.01f));
-        }
+        }*/
 
-
-        Vertex v = vertex.GetComponent<Vertex>();
-        HashSet<Edge> adjEdges = v.adjacentEdges;
-        foreach (Edge edge in adjEdges)
-        {
-            Vertex other = null;
-            foreach (Vertex o in edge.adjacentVertices)
-            {
-                if (o != v) other = o;
-            }
-            edge.adjacentVertices.ToList<Vertex>();
-
-            Vector3 curr_pos = vertex.transform.position;
-            Vector3 other_pos = other.gameObject.transform.position;
-
-            Vector3 edge_pos = Vector3.Lerp(curr_pos, other_pos, 0.5f);
-            edge.transform.position = edge_pos;
-            
-            var offset = other_pos - curr_pos;
-            var scale = new Vector3(0.5f, offset.magnitude / 2, 0.5f);
-            edge.transform.up = offset;
-            edge.transform.localScale = scale;
-        }
-        //Debug.Log(v.adjacentEdges.Count);
+        GameManager.Instance.moveEdges(vertex.GetComponent<Vertex>());
         
     }
+
+   
 }

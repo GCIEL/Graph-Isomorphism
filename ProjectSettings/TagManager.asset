@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - nonMovableVertex
+  - movableVertex
+  - movableEdge
+  - nonMovableEdge
   layers:
   - Default
   - TransparentFX
@@ -13,8 +17,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - movableVertices
+  - nonMovableVertices
   - 
   - 
   - 

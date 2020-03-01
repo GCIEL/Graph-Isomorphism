@@ -1,17 +1,30 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class Vertex : MonoBehaviour {
+public struct vertexInfo
+{
+    public bool staticVertex;
+    public int vertexNumber;
+}
+
+public class Vertex : MonoBehaviour
+{
 
     public Renderer rend;
-    public HashSet<Edge> adjacentEdges;
+    public HashSet<Edge> incidentEdges;
+    public HashSet<int> adjacentVertexNum;
 
     // Whether the vertex is part of a static graph
-    public bool staticVertex;
+    public vertexInfo information;
+
+    // If static vertex, record if another vertex is attached 
+    public bool isAttached;
 
     // Use this for initialization
-    void Start () {
+    void Start()
+    {
 
     }
 
@@ -21,39 +34,54 @@ public class Vertex : MonoBehaviour {
         rend = GetComponent<Renderer>();
         //Set the main Color of the Material to white
         rend.material.color = Color.white;
-
-        staticVertex = false;
+        information = new vertexInfo();
+        information.staticVertex = false;
+        isAttached = false;
+        adjacentVertexNum = new HashSet<int>();
     }
 
     public void ChangeOpacity()
     {
         // Set opacity
         var temp = GetComponent<Renderer>().material.color;
-        temp.a = 0.1f;
+        temp.a = 0.2f;
         GetComponent<Renderer>().material.color = temp;
-        //Debug.Log(GetComponent<Renderer>().material.color.a);
+    }
+
+    public void recordAdjacentVerices()
+    {
+        foreach (Edge edge in incidentEdges)
+        {
+            foreach (Vertex vertex in edge.adjacentVertices.ToList<Vertex>())
+            {
+                if (vertex.information.vertexNumber != this.information.vertexNumber)
+                {
+                    adjacentVertexNum.Add(vertex.information.vertexNumber);
+                }
+            }
+        }
     }
 
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.name == "Sphere(Clone)")
+        if (other.tag == "nonMovableVertex")
         {
             Vertex collidedVertex = other.gameObject.GetComponent<Vertex>();
-            if (collidedVertex.staticVertex)
-            {
-                Debug.Log("Collided with static vertex");
-                Debug.Log("this pos" + this.transform.position);
-                Debug.Log("other pos" + collidedVertex.transform.position);
-                this.transform.position = collidedVertex.transform.position;
-                Debug.Log("this pos after" + this.transform.position);
-                //GameManager.Instance.selectedVertex = null;
-            }
+            this.transform.position = collidedVertex.transform.position;
+            GameManager.Instance.selectedVertex = null;
+            GameManager.Instance.moveEdges(this);
+            Debug.Log(string.Join(",", adjacentVertexNum.ToList<int>().ToArray()));
+            Debug.Log(string.Join(",", collidedVertex.adjacentVertexNum.ToList<int>().ToArray()));
+            GameManager.Instance.mapping.Add(collidedVertex.information.vertexNumber, this);
         }
     }
 
+
     // Update is called once per frame
-    void Update () {
- 
+    void Update()
+    {
+
     }
+
 }

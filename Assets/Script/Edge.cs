@@ -22,13 +22,13 @@ public class Edge : MonoBehaviour {
     {
         // Set opacity
         var temp = GetComponent<Renderer>().material.color;
-        temp.a = 0.1f;
+        temp.a = 0.2f;
         GetComponent<Renderer>().material.color = temp;
         //Debug.Log(GetComponent<Renderer>().material.color.a);
     }
 
     // Update is called once per frame
     void Update () {
-   
+       
     }
 }

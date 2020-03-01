@@ -111,6 +111,7 @@ public class SteamVR_LaserPointer : MonoBehaviour
         if (bHit && previousContact != hit.transform)
         {
             PointerEventArgs argsIn = new PointerEventArgs();
+            
             if (controller != null)
             {
                 argsIn.controllerIndex = controller.controllerIndex;
@@ -118,6 +119,7 @@ public class SteamVR_LaserPointer : MonoBehaviour
             argsIn.distance = hit.distance;
             argsIn.flags = 0;
             argsIn.target = hit.transform;
+            if (argsIn.target.tag == "nonMoveableVertex") return;
             OnPointerIn(argsIn);
             previousContact = hit.transform;
         }
