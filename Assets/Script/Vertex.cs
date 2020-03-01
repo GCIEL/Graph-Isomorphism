@@ -19,8 +19,10 @@ public class Vertex : MonoBehaviour
     // Whether the vertex is part of a static graph
     public vertexInfo information;
 
-    // If static vertex, record if another vertex is attached 
-    public bool isAttached;
+    // If static vertex, record the number of colliding dynamic vertex.
+    public int numDynamicVertexCollided;
+
+   
 
     // Use this for initialization
     void Start()
@@ -34,9 +36,11 @@ public class Vertex : MonoBehaviour
         rend = GetComponent<Renderer>();
         //Set the main Color of the Material to white
         rend.material.color = Color.white;
-        information = new vertexInfo();
-        information.staticVertex = false;
-        isAttached = false;
+        information = new vertexInfo
+        {
+            staticVertex = false
+        };
+        numDynamicVertexCollided = 0;
         adjacentVertexNum = new HashSet<int>();
     }
 
@@ -68,15 +72,31 @@ public class Vertex : MonoBehaviour
         if (other.tag == "nonMovableVertex")
         {
             Vertex collidedVertex = other.gameObject.GetComponent<Vertex>();
+            collidedVertex.numDynamicVertexCollided++;
+            if (collidedVertex.numDynamicVertexCollided > 1) return;
             this.transform.position = collidedVertex.transform.position;
             GameManager.Instance.selectedVertex = null;
             GameManager.Instance.moveEdges(this);
-            Debug.Log(string.Join(",", adjacentVertexNum.ToList<int>().ToArray()));
-            Debug.Log(string.Join(",", collidedVertex.adjacentVertexNum.ToList<int>().ToArray()));
-            GameManager.Instance.mapping.Add(collidedVertex.information.vertexNumber, this);
+
+            if (GameManager.Instance.mapping.Contains(collidedVertex.information.vertexNumber))
+            {
+                GameManager.Instance.mapping[collidedVertex.information.vertexNumber] = this;
+            }
+            else
+            {
+                GameManager.Instance.mapping.Add(collidedVertex.information.vertexNumber, this);
+            }
         }
     }
-
+    void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "nonMovableVertex")
+        {
+            Debug.Log("leaving vertex");
+            Vertex collidedVertex = other.gameObject.GetComponent<Vertex>();
+            collidedVertex.numDynamicVertexCollided--;
+        }
+    }
 
     // Update is called once per frame
     void Update()

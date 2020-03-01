@@ -17,7 +17,7 @@ public class GameManager : Singleton<GameManager> {
     // Boolean to see if current graph is a cube
     bool isCube;
 
-    // Boolean to see if coloring is done and a boolean to store is plane color is changed already (plane color will change after the user completes the game)
+    // Boolean to see if game is done and a boolean to store is plane color is changed already (plane color will change after the user completes the game)
     bool completed;
     bool changedPlanecolor;
 
@@ -57,16 +57,30 @@ public class GameManager : Singleton<GameManager> {
         static_vertex_list = new List<Vertex>();
         dynamic_vertex_list = new List<Vertex>();
     }
+
     // Update is called once per frame
-    void Update() {
-        // If the coloring isn't completed, check if it is
-        if (!completed)
-        { 
-            //CheckAll();
-        }
-        // If the coloring is completed and the color of plant isn't changed yet, change the color of the plane
-        if (completed && !changedPlanecolor)
+    void Update()
+    {
+#if !completed
+        Hashtable isomorphism = GameManager.Instance.mapping;
+        if (GameManager.Instance.mapping.Count == GameManager.Instance.static_vertex_list.Count)
         {
+            foreach (Vertex vertex in GameManager.Instance.static_vertex_list)
+            {
+                Vertex mappedVertex = (Vertex)isomorphism[vertex.information.vertexNumber];
+                List<int> adjacentToMappedVertexNum = mappedVertex.adjacentVertexNum.ToList<int>();
+                List<int> adjacentToMappedVertexNumConverted = new List<int>();
+                foreach (int index in adjacentToMappedVertexNum)
+                {
+                    Vertex v = (Vertex)isomorphism[index];
+                    adjacentToMappedVertexNumConverted.Add(v.information.vertexNumber);
+                }
+                List<int> adjacentToStaticVertexNum = vertex.adjacentVertexNum.ToList<int>();
+                Debug.Log("dynamic vertices" + string.Join(",", adjacentToMappedVertexNumConverted));
+                Debug.Log("static vertices" + string.Join(",", adjacentToStaticVertexNum));
+
+                if (!adjacentToMappedVertexNumConverted.All(adjacentToStaticVertexNum.Contains)) return;
+            }
             GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();
             for (int i = 0; i < graphComponents.Length; i++)
             {
@@ -76,12 +90,13 @@ public class GameManager : Singleton<GameManager> {
                     continue;
                 }
             }
-            changedPlanecolor = true;
-        }
+            completed = true;
+        } 
+#endif
     }
 
     // changes the graph
-    public void changeGraph()
+    public void ChangeGraph()
     {   
         // graphComponenets stores all gameobjects rendered until now
         GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();

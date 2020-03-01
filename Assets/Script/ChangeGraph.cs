@@ -18,7 +18,7 @@ public class ChangeGraph : MonoBehaviour
     }
     private void TriggerClicked(object sender, ClickedEventArgs e)
     {
-        GameManager.Instance.changeGraph();
+        GameManager.Instance.ChangeGraph();
     }
 
     // Update is called once per frame
