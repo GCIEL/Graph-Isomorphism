@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using System.IO;
 
 // GameManager class that utilizes a singleton pattern
 
@@ -13,9 +14,6 @@ public class GameManager : Singleton<GameManager> {
 
     // Track a vertex selected 
     public GameObject selectedVertex;
-
-    // Boolean to see if current graph is a cube
-    bool isCube;
 
     // Boolean to see if game is done and a boolean to store is plane color is changed already (plane color will change after the user completes the game)
     bool completed;
@@ -30,9 +28,6 @@ public class GameManager : Singleton<GameManager> {
     public List<Vertex> dynamic_vertex_list;
     public Edge[,] edges_list;
 
-    // Chromatic number for this grapsh
-    public int Answer { get; set; }
-
     string[] adjMatrixLines;
     string[] posLines;
 
@@ -46,7 +41,6 @@ public class GameManager : Singleton<GameManager> {
     // Use this for initialization 
     void Start() {
         selectedVertex = null;
-        isCube = false;
         completed = false;
         changedPlanecolor = false;
         mapping = new Hashtable();
@@ -109,21 +103,32 @@ public class GameManager : Singleton<GameManager> {
             if (graphComponents[i].name == "Sphere(Clone)" || graphComponents[i].name == "Cylinder(Clone)") Destroy(graphComponents[i]);
             if (graphComponents[i].name == "Plane") graphComponents[i].GetComponent<Renderer>().material.color = Color.white;
         }
+        GameManager.Instance.drawGraph(vertexPrefab, edgePrefab);
+    }
 
-        // according to the current graph, we instantiate a new graph
-        if (isCube)
-        {
-            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, false);
-            GameManager.Instance.buildGraph(Resources.Load("PyramidAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("PyramidPos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, true);
-            isCube = false;
-        }
-        else
-        {
-            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, false);
-            GameManager.Instance.buildGraph(Resources.Load("CubeAdjMatrix", typeof(TextAsset)) as TextAsset, Resources.Load("CubePos", typeof(TextAsset)) as TextAsset, Resources.Load("Sphere", typeof(Vertex)) as Vertex, Resources.Load("Cylinder", typeof(Edge)) as Edge, true);
 
-            isCube = true;
+    public void drawGraph(Vertex vertexPrefab, Edge edgePrefab)
+    {
+        // Get the list of directories in Assets/Resources that has information of graphs
+        string[] directoryList = Directory.GetDirectories("Assets/Resources");
+        List<string> directoryNameList = new List<string>();
+
+        // Parse the directoryList to extract the directory names
+        foreach (string s in directoryList)
+        {
+            var dir = new DirectoryInfo(s);
+            directoryNameList.Add(dir.Name);
         }
+
+        int rand = UnityEngine.Random.Range(0, directoryNameList.Count);
+        
+        // Get the path for the adjacency matrix and position matrix
+        string adjMatrixPath = Path.Combine(directoryNameList[rand], "AdjMatrix");
+        string posPath = Path.Combine(directoryNameList[rand], "Pos");
+
+        //Draw the graph
+        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPath, typeof(TextAsset)) as TextAsset, Resources.Load(posPath, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, false);
+        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPath, typeof(TextAsset)) as TextAsset, Resources.Load(posPath, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, true);
     }
 
     // Build graph from given textfile, vertex/edge Prefabs and whether or not the graph is static
@@ -275,7 +280,7 @@ public class GameManager : Singleton<GameManager> {
             }
         }
 
-        Debug.Log(static_vertex_list.Count);
+        // Debug.Log(static_vertex_list.Count);
         if (staticGraph)
         {
             foreach (Vertex vertex in static_vertex_list)
@@ -290,7 +295,7 @@ public class GameManager : Singleton<GameManager> {
             }
         }
         
-        Answer = Int32.Parse(adjMatrixLines[adjMatrixLines.Length - 1]);
+
 
         // Adjust the height of the plane and the camerarig according to the min max coordinates of the vertices
         GameObject[] graphComponents = UnityEngine.Object.FindObjectsOfType<GameObject>();
@@ -360,11 +365,7 @@ public class GameManager : Singleton<GameManager> {
             }
         }
 
-        // If we have have a valid coloring and colored used is equal to the chromatic number, then the coloring is completed
-        if (valid_coloring && (color_used == Answer))
-        {
-            completed = true;
-        }
+     
     }
     public void moveEdges(Vertex v)
     {

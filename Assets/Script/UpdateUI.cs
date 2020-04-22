@@ -19,6 +19,6 @@ public class UpdateUI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        gameStatusLabel.text = String.Format("Chromatic Number: {0}", GameManager.Instance.Answer.ToString());
+        
 	}
 }
