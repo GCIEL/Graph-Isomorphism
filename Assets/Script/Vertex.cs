@@ -52,6 +52,7 @@ public class Vertex : MonoBehaviour
         GetComponent<Renderer>().material.color = temp;
     }
 
+    // Function to add the vertexNumber of each adjacent vertex
     public void recordAdjacentVerices()
     {
         foreach (Edge edge in incidentEdges)
@@ -66,18 +67,20 @@ public class Vertex : MonoBehaviour
         }
     }
 
-
+    // Function to be called when raycast interacts with the vertex
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "nonMovableVertex")
         {
+            // Get the collidedVertex, and incremene the collidedVertex counter. If there are more than vertex that is colliding with this vertex, then don't do anything
+            // i.e. only move this vertex if it's the first and only one to have collided
             Vertex collidedVertex = other.gameObject.GetComponent<Vertex>();
             collidedVertex.numDynamicVertexCollided++;
             if (collidedVertex.numDynamicVertexCollided > 1) return;
             this.transform.position = collidedVertex.transform.position;
             GameManager.Instance.selectedVertex = null;
             GameManager.Instance.moveEdges(this);
-
+            // Add the vertex pair to the mapping - i.e. user's proposed isomorphism
             if (GameManager.Instance.mapping.Contains(collidedVertex.information.vertexNumber))
             {
                 GameManager.Instance.mapping[collidedVertex.information.vertexNumber] = this;
@@ -88,8 +91,10 @@ public class Vertex : MonoBehaviour
             }
         }
     }
-    void OnTriggerExit(Collider other)
-    {
+
+    // Function to be called with raycast exists the vertex
+    void OnTriggerExit(Collider other) { 
+        // If its a static vertex, decrement the collided vertex count
         if (other.tag == "nonMovableVertex")
         {
             Debug.Log("leaving vertex");

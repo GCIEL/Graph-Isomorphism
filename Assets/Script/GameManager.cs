@@ -9,6 +9,8 @@ using System.Linq;
 using System.IO;
 
 // GameManager class that utilizes a singleton pattern
+// Acts as a contol center for the game and holds all important information about the graph and the game status.
+// Since it is a singleton, we guarantee that we only have exactly one copy of the gamemanager, preventing any conflict
 
 public class GameManager : Singleton<GameManager> {
 
@@ -28,8 +30,10 @@ public class GameManager : Singleton<GameManager> {
     public List<Vertex> dynamic_vertex_list;
     public Edge[,] edges_list;
 
+    // String array to be used for parsing in the user adjacency matrix and position list
     string[] adjMatrixLines;
-    string[] posLines;
+    string[] posLinesDynamic;
+    string[] posLinesStatic;
 
     // offset to use for static graph
     int staticGraphOffset;
@@ -122,13 +126,17 @@ public class GameManager : Singleton<GameManager> {
 
         int rand = UnityEngine.Random.Range(0, directoryNameList.Count);
         
-        // Get the path for the adjacency matrix and position matrix
-        string adjMatrixPath = Path.Combine(directoryNameList[rand], "AdjMatrix");
-        string posPath = Path.Combine(directoryNameList[rand], "Pos");
+        // Get the path for the adjacency matrix and position matrix for the dynamic graph on the left
+        string adjMatrixPathDynamic = Path.Combine(directoryNameList[rand], "Dynamic/AdjMatrix");
+        string posPathDynamic = Path.Combine(directoryNameList[rand], "Dynamic/Pos");
+
+        // Get the path for the adjacency matrix and position matrix for the static graph on the right
+        string adjMatrixPathStatic = Path.Combine(directoryNameList[rand], "Static/AdjMatrix");
+        string posPathStatic = Path.Combine(directoryNameList[rand], "Static/Pos");
 
         //Draw the graph
-        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPath, typeof(TextAsset)) as TextAsset, Resources.Load(posPath, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, false);
-        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPath, typeof(TextAsset)) as TextAsset, Resources.Load(posPath, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, true);
+        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPathDynamic, typeof(TextAsset)) as TextAsset, Resources.Load(posPathDynamic, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, false);
+        GameManager.Instance.buildGraph(Resources.Load(adjMatrixPathStatic, typeof(TextAsset)) as TextAsset, Resources.Load(posPathStatic, typeof(TextAsset)) as TextAsset, vertexPrefab, edgePrefab, true);
     }
 
     // Build graph from given textfile, vertex/edge Prefabs and whether or not the graph is static
@@ -143,10 +151,17 @@ public class GameManager : Singleton<GameManager> {
 
         // Parse the textfiles
         adjMatrixLines = Regex.Split(adjMatrix.text, "\n");
-        posLines = Regex.Split(pos.text, "\n");
+        if (staticGraph)
+        {
+            posLinesStatic = Regex.Split(pos.text, "\n");
+        }
+        else
+        {
+            posLinesDynamic = Regex.Split(pos.text, "\n");
+        }
 
         // Initialize e
-        edges_list = new Edge[adjMatrixLines.Length - 1, adjMatrixLines.Length - 1];
+        edges_list = new Edge[adjMatrixLines.Length, adjMatrixLines.Length];
 
         // Store the smallest y-value for the plane
         int minYValue = Int32.MaxValue;
@@ -157,10 +172,10 @@ public class GameManager : Singleton<GameManager> {
         int maxXValue = Int32.MinValue;
 
         // instantiate vertices and edges based on csv file.
-        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+        for (int i = 0; i < adjMatrixLines.Length; i++)
         {
             string valueLineAdj = adjMatrixLines[i];
-            string valueLinePos = posLines[i];
+            string valueLinePos = staticGraph ? posLinesStatic[i] : posLinesDynamic[i];
 
             string[] valuesAdj = Regex.Split(valueLineAdj, ",");
             string[] valuesPos = Regex.Split(valueLinePos, ",");
@@ -183,7 +198,7 @@ public class GameManager : Singleton<GameManager> {
             if (!staticGraph) staticGraphOffset = maxXValue - minXValue;
             
 
-            // instantiate vertices
+            // instantiate vertices. For each vertex, initialize the incidentEdges Hashset, vertex number and if its a static graph add it to layer 2: Ignore raycast so that the vertex doesn't interact with the ray
 
             if (!staticGraph)
             {
@@ -207,7 +222,7 @@ public class GameManager : Singleton<GameManager> {
             
            
             
-                
+            // Instantiate the edges and initialize the adjacent vertices hashset for each edge
             if (i != 0)
             {
                 for (int j = 0; j < i; j++)
@@ -221,6 +236,7 @@ public class GameManager : Singleton<GameManager> {
                             Vector3 edge_pos = Vector3.Lerp(position, other_pos, 0.5f);
                             Edge e = Instantiate(edgePrefab, edge_pos, Quaternion.identity);
                             e.staticEdge = true;
+                            // Make the edge opaque if it's part of a static graph
                             e.ChangeOpacity();
                             e.tag = "nonMovableEdge";
                             var offset = other_pos - position;
@@ -247,7 +263,7 @@ public class GameManager : Singleton<GameManager> {
             }
         }
 
-        // Only populate vertexlist and edge list for dynamic graph - no need for static graphs
+        // For each vertex and edge populate it's incidentEdge and adjacentVertices list
         if (staticGraph)
         {
             for (int i = 0; i < adjMatrixLines.Length - 1; i++)
@@ -280,7 +296,7 @@ public class GameManager : Singleton<GameManager> {
             }
         }
 
-        // Debug.Log(static_vertex_list.Count);
+        // For each vertex, populate the adjacent vertex number list - used to determine the isomorphism
         if (staticGraph)
         {
             foreach (Vertex vertex in static_vertex_list)
@@ -318,66 +334,19 @@ public class GameManager : Singleton<GameManager> {
 
     }
 
-    public void CheckAll()
-    {
-        Boolean valid_coloring = true;
-        Boolean is_finished = true;
-        int color_used = 0;
-        List<Color> color_list = new List<Color>();
-
-        for (int i = 0; i < adjMatrixLines.Length - 1; i++)
-        {
-            string valueLine = adjMatrixLines[i];
-            string[] values = Regex.Split(valueLine, ",");
-            Color this_color = static_vertex_list[i].rend.material.color;
-            if (this_color == Color.white)
-            {
-                is_finished = false;
-            }
-            else
-            {
-                if (!color_list.Contains(this_color))
-                {
-                    color_used++;
-                    color_list.Add(this_color);
-                }
-            }
-
-            if (i != 0)
-            {
-                for (int j = 0; j < i; j++)
-                {
-                    int test = Int32.Parse(values[j]);
-                    if (test == 1)
-                    {
-                        Color other_color = static_vertex_list[j].rend.material.color;
-                        if (this_color != Color.white && this_color != Color.white && this_color == other_color)
-                        {
-                            valid_coloring = false;
-                            edges_list[i, j].rend.material.color = Color.black;
-                        }
-                        else
-                        {
-                            edges_list[i, j].rend.material.color = Color.white;
-                        }
-                    }
-                }
-            }
-        }
-
-     
-    }
+    // Function to move all incident edges to vertex v so that the edges follow the movement of the vertex when a user moves a vertex
     public void moveEdges(Vertex v)
     {
+        // Get set of all edges
         HashSet<Edge> adjEdges = v.incidentEdges;
         foreach (Edge edge in adjEdges)
         {
             Vertex other = null;
+            // For all vertices that isn't the one that we are trying to move, get its position and redraw an edge between the vertices
             foreach (Vertex o in edge.adjacentVertices)
             {
                 if (o != v) other = o;
             }
-            //edge.adjacentVertices.ToList<Vertex>();
 
             Vector3 curr_pos = v.transform.position;
             Vector3 other_pos = other.gameObject.transform.position;
