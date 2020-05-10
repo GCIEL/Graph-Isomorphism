@@ -8,8 +8,11 @@ An alpha-level prototype VR game to teach graph isomorphisms and help students v
 
 ## Authors and Contributors
 
-* **Nikunj Agrawal** - [Website](https://nikunj-agrawal.com/) and [GitHub](https://github.com/nikagarwal98)
 * **Yuya Kawakami** - [GitHub](https://github.com/yuya737)
+## Past Contributors
+
+
+* **Nikunj Agrawal** - [Website](https://nikunj-agrawal.com/) and [GitHub](https://github.com/nikagarwal98)
 
 ## Acknowledgments
 
