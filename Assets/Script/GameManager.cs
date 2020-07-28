@@ -266,7 +266,7 @@ public class GameManager : Singleton<GameManager> {
         // For each vertex and edge populate it's incidentEdge and adjacentVertices list
         if (staticGraph)
         {
-            for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+            for (int i = 0; i < adjMatrixLines.Length; i++)
             {
                 for (int j = 0; j < i; j++)
                 {
@@ -281,7 +281,7 @@ public class GameManager : Singleton<GameManager> {
             }
         } else
         {
-            for (int i = 0; i < adjMatrixLines.Length - 1; i++)
+            for (int i = 0; i < adjMatrixLines.Length; i++)
             {
                 for (int j = 0; j < i; j++)
                 {
